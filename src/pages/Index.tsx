@@ -1,12 +1,21 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import HomePage from '@/components/HomePage';
+import DonorSearch from '@/components/DonorSearch';
 
 const Index = () => {
+  const [currentPage, setCurrentPage] = useState<'home' | 'search'>('home');
+
+  const navigateToSearch = () => setCurrentPage('search');
+  const navigateToHome = () => setCurrentPage('home');
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {currentPage === 'home' && (
+        <HomePage onNavigateToSearch={navigateToSearch} />
+      )}
+      {currentPage === 'search' && (
+        <DonorSearch onNavigateHome={navigateToHome} />
+      )}
     </div>
   );
 };
