@@ -5,10 +5,12 @@ import GlassCard from './GlassCard';
 import NeonButton from './NeonButton';
 import DonorRegistrationModal from './DonorRegistrationModal';
 import AboutModal from './AboutModal';
+import ContactModal from './ContactModal';
 
 const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) => {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -20,7 +22,7 @@ const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) =>
           <h1 className="text-2xl font-bold neon-text">Blood Connect</h1>
           <nav className="flex space-x-4">
             <NeonButton variant="outline" size="sm" onClick={() => setShowAboutModal(true)}>About</NeonButton>
-            <NeonButton variant="outline" size="sm">Contact</NeonButton>
+            <NeonButton variant="outline" size="sm" onClick={() => setShowContactModal(true)}>Contact</NeonButton>
           </nav>
         </GlassCard>
       </header>
@@ -101,9 +103,12 @@ const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) =>
             >
               About
             </button>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+            <button 
+              onClick={() => setShowContactModal(true)}
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
               Contact
-            </a>
+            </button>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
               Privacy Policy
             </a>
@@ -122,6 +127,11 @@ const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) =>
       {/* About Modal */}
       {showAboutModal && (
         <AboutModal onClose={() => setShowAboutModal(false)} />
+      )}
+
+      {/* Contact Modal */}
+      {showContactModal && (
+        <ContactModal onClose={() => setShowContactModal(false)} />
       )}
     </div>
   );
