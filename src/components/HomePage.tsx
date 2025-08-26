@@ -6,11 +6,13 @@ import NeonButton from './NeonButton';
 import DonorRegistrationModal from './DonorRegistrationModal';
 import AboutModal from './AboutModal';
 import ContactModal from './ContactModal';
+import TermsModal from './TermsModal';
 
 const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) => {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -109,12 +111,12 @@ const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) =>
             >
               Contact
             </button>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              Terms of Service
-            </a>
+            <button 
+              onClick={() => setShowTermsModal(true)}
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              Terms & Conditions
+            </button>
           </div>
         </GlassCard>
       </footer>
@@ -132,6 +134,11 @@ const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) =>
       {/* Contact Modal */}
       {showContactModal && (
         <ContactModal onClose={() => setShowContactModal(false)} />
+      )}
+
+      {/* Terms Modal */}
+      {showTermsModal && (
+        <TermsModal onClose={() => setShowTermsModal(false)} />
       )}
     </div>
   );
