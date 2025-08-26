@@ -4,9 +4,11 @@ import ParticleBackground from './ParticleBackground';
 import GlassCard from './GlassCard';
 import NeonButton from './NeonButton';
 import DonorRegistrationModal from './DonorRegistrationModal';
+import AboutModal from './AboutModal';
 
 const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) => {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -17,7 +19,7 @@ const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) =>
         <GlassCard className="flex justify-between items-center">
           <h1 className="text-2xl font-bold neon-text">Blood Connect</h1>
           <nav className="flex space-x-4">
-            <NeonButton variant="outline" size="sm">About</NeonButton>
+            <NeonButton variant="outline" size="sm" onClick={() => setShowAboutModal(true)}>About</NeonButton>
             <NeonButton variant="outline" size="sm">Contact</NeonButton>
           </nav>
         </GlassCard>
@@ -93,9 +95,12 @@ const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) =>
       <footer className="relative z-10 p-6 mt-16">
         <GlassCard>
           <div className="flex justify-center space-x-8 text-sm">
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+            <button 
+              onClick={() => setShowAboutModal(true)}
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
               About
-            </a>
+            </button>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
               Contact
             </a>
@@ -112,6 +117,11 @@ const HomePage = ({ onNavigateToSearch }: { onNavigateToSearch: () => void }) =>
       {/* Registration Modal */}
       {showRegistrationModal && (
         <DonorRegistrationModal onClose={() => setShowRegistrationModal(false)} />
+      )}
+
+      {/* About Modal */}
+      {showAboutModal && (
+        <AboutModal onClose={() => setShowAboutModal(false)} />
       )}
     </div>
   );
