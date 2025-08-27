@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import GlassCard from './GlassCard';
 import NeonButton from './NeonButton';
+import DonorRegistrationForm from './DonorRegistrationForm';
 
 interface DonorRegistrationModalProps {
   onClose: () => void;
@@ -51,26 +52,10 @@ const DonorRegistrationModal = ({ onClose }: DonorRegistrationModalProps) => {
           </p>
         </div>
 
-        {/* Google Form Embed */}
-        <div className="w-full h-[600px] rounded-lg overflow-hidden">
-          <iframe
-            src="https://docs.google.com/forms/d/e/1FAIpQLSd3jY42VzXypr8oEiF-8W_upzY1eWzTrp7mZCAg2Igj0eYH0A/viewform?embedded=true"
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            marginHeight={0}
-            marginWidth={0}
-            className="bg-white rounded-lg"
-            title="Blood Donor Registration Form"
-          >
-            Loading…
-          </iframe>
-        </div>
+        {/* Custom Registration Form */}
+        <DonorRegistrationForm onSuccess={onClose} />
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground mb-4">
-            Can't see the form? <a href="https://docs.google.com/forms/d/e/1FAIpQLSd3jY42VzXypr8oEiF-8W_upzY1eWzTrp7mZCAg2Igj0eYH0A/viewform" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Open in new tab</a>
-          </p>
           <NeonButton variant="outline" onClick={onClose}>
             Close
           </NeonButton>
