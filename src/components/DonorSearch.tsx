@@ -52,8 +52,9 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
       }
       
       if (query) {
+        // Use * wildcard pattern as expected by PostgREST for ilike filters
         supabaseQuery = supabaseQuery.or(
-          `name.ilike.%${query}%,location.ilike.%${query}%,gender.ilike.%${query}%`
+          `name.ilike.*${query}*,location.ilike.*${query}*,gender.ilike.*${query}*`
         );
       }
       
@@ -113,10 +114,10 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
     }
   };
 
+  // Subscribe to new/updated donors only once on mount
   useEffect(() => {
     searchDonors();
     
-    // Set up real-time subscription for new donors
     const channel = supabase
       .channel('donors-changes')
       .on(
@@ -155,6 +156,12 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Run a search automatically whenever user updates the inputs
+  useEffect(() => {
+    searchDonors(selectedBloodGroup, searchQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBloodGroup, searchQuery]);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
