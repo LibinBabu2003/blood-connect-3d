@@ -5,10 +5,13 @@ import NeonButton from './NeonButton';
 interface Donor {
   id: string;
   name: string;
-  bloodGroup: string;
-  gender: 'Male' | 'Female';
+  blood_group: string;
+  gender: string;
   phone: string;
   location: string;
+  age: number;
+  email: string;
+  is_available: boolean;
 }
 
 interface DonorCardProps {
@@ -36,7 +39,7 @@ const DonorCard = ({ donor, delay = 0 }: DonorCardProps) => {
   };
 
   const handleWhatsApp = () => {
-    const message = `Hi ${donor.name}, I found your contact through Blood Connect. I need ${donor.bloodGroup} blood donation. Could you please help?`;
+    const message = `Hi ${donor.name}, I found your contact through Blood Connect. I need ${donor.blood_group} blood donation. Could you please help?`;
     const whatsappUrl = `https://wa.me/${donor.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -62,7 +65,7 @@ const DonorCard = ({ donor, delay = 0 }: DonorCardProps) => {
         {/* Blood Group */}
         <div className="mb-4">
           <span className="inline-block px-4 py-2 rounded-full text-lg font-bold neon-text border border-primary/50 glass">
-            {donor.bloodGroup}
+            {donor.blood_group}
           </span>
         </div>
 

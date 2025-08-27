@@ -54,7 +54,7 @@ const DonorRegistrationModal = ({ onClose }: DonorRegistrationModalProps) => {
         {/* Google Form Embed */}
         <div className="w-full h-[600px] rounded-lg overflow-hidden">
           <iframe
-            src="https://docs.google.com/forms/d/e/1FAIpQLSfxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/viewform?embedded=true"
+            src="https://docs.google.com/forms/d/e/1FAIpQLSd3jY42VzXypr8oEiF-8W_upzY1eWzTrp7mZCAg2Igj0eYH0A/viewform?embedded=true"
             width="100%"
             height="100%"
             frameBorder="0"
@@ -69,7 +69,7 @@ const DonorRegistrationModal = ({ onClose }: DonorRegistrationModalProps) => {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            Can't see the form? <a href="https://forms.google.com/your-form-link" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Open in new tab</a>
+            Can't see the form? <a href="https://docs.google.com/forms/d/e/1FAIpQLSd3jY42VzXypr8oEiF-8W_upzY1eWzTrp7mZCAg2Igj0eYH0A/viewform" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Open in new tab</a>
           </p>
           <NeonButton variant="outline" onClick={onClose}>
             Close

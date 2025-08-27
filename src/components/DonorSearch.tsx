@@ -1,59 +1,85 @@
 import { useState, useEffect } from 'react';
+import { ArrowLeft, Search, Mic } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import GlassCard from './GlassCard';
 import NeonButton from './NeonButton';
-import ParticleBackground from './ParticleBackground';
 import DonorCard from './DonorCard';
+import ParticleBackground from './ParticleBackground';
 
 interface Donor {
   id: string;
   name: string;
-  bloodGroup: string;
-  gender: 'Male' | 'Female';
+  blood_group: string;
+  gender: string;
   phone: string;
   location: string;
+  age: number;
+  email: string;
+  is_available: boolean;
+  address?: string;
+  created_at?: string;
+  updated_at?: string;
+  last_donation_date?: string;
+  medical_conditions?: string;
+  emergency_contact?: string;
+}
+
+interface DonorSearchProps {
+  onNavigateHome: () => void;
 }
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-const DonorSearch = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
+const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
   const [selectedBloodGroup, setSelectedBloodGroup] = useState('');
-  const [donors, setDonors] = useState<Donor[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [donors, setDonors] = useState<Donor[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data for demonstration
-  const mockDonors: Donor[] = [
-    { id: '1', name: 'Rajesh Kumar', bloodGroup: 'O+', gender: 'Male', phone: '+91 9876543210', location: 'Mumbai' },
-    { id: '2', name: 'Priya Sharma', bloodGroup: 'O+', gender: 'Female', phone: '+91 9876543211', location: 'Delhi' },
-    { id: '3', name: 'Amit Singh', bloodGroup: 'A+', gender: 'Male', phone: '+91 9876543212', location: 'Bangalore' },
-    { id: '4', name: 'Sneha Patel', bloodGroup: 'B+', gender: 'Female', phone: '+91 9876543213', location: 'Pune' },
-    { id: '5', name: 'Vikram Joshi', bloodGroup: 'AB+', gender: 'Male', phone: '+91 9876543214', location: 'Chennai' },
-  ];
-
-  const searchDonors = async () => {
-    if (!selectedBloodGroup) return;
-
-    setLoading(true);
+  const searchDonors = async (bloodGroup?: string, query?: string) => {
+    setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      const filteredDonors = mockDonors
-        .filter(donor => donor.bloodGroup === selectedBloodGroup)
-        .filter(donor => 
-          searchQuery === '' || 
-          donor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          donor.location.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .sort((a, b) => {
-          // Sort: Males first, then females
-          if (a.gender === 'Male' && b.gender === 'Female') return -1;
-          if (a.gender === 'Female' && b.gender === 'Male') return 1;
-          return a.name.localeCompare(b.name);
+    try {
+      let supabaseQuery = supabase
+        .from('donors')
+        .select('*')
+        .eq('is_available', true)
+        .order('created_at', { ascending: false });
+      
+      if (bloodGroup) {
+        supabaseQuery = supabaseQuery.eq('blood_group', bloodGroup);
+      }
+      
+      if (query) {
+        supabaseQuery = supabaseQuery.or(
+          `name.ilike.%${query}%,location.ilike.%${query}%,gender.ilike.%${query}%`
+        );
+      }
+      
+      const { data, error } = await supabaseQuery;
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch donors. Please try again.",
+          variant: "destructive",
         });
-
-      setDonors(filteredDonors);
-      setLoading(false);
-    }, 1000);
+        setDonors([]);
+      } else {
+        setDonors(data || []);
+      }
+    } catch (error) {
+      console.error('Error searching donors:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch donors. Please try again.",
+        variant: "destructive",
+      });
+      setDonors([]);
+    }
+    
+    setIsLoading(false);
   };
 
   const handleVoiceSearch = () => {
@@ -79,9 +105,56 @@ const DonorSearch = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
 
       recognition.start();
     } else {
-      alert('Speech recognition not supported in your browser');
+      toast({
+        title: "Not Supported",
+        description: "Speech recognition not supported in your browser",
+        variant: "destructive",
+      });
     }
   };
+
+  useEffect(() => {
+    searchDonors();
+    
+    // Set up real-time subscription for new donors
+    const channel = supabase
+      .channel('donors-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'donors'
+        },
+        (payload) => {
+          console.log('New donor added:', payload);
+          // Refresh the search to include new donor
+          searchDonors(selectedBloodGroup, searchQuery);
+          toast({
+            title: "New Donor Available!",
+            description: `${payload.new.name} with ${payload.new.blood_group} blood group just registered.`,
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'donors'
+        },
+        (payload) => {
+          console.log('Donor updated:', payload);
+          // Refresh the search to reflect updates
+          searchDonors(selectedBloodGroup, searchQuery);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -92,7 +165,8 @@ const DonorSearch = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
         <GlassCard className="flex justify-between items-center">
           <h1 className="text-2xl font-bold neon-text">Find Blood Donors</h1>
           <NeonButton variant="outline" size="sm" onClick={onNavigateHome}>
-            ← Back to Home
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
           </NeonButton>
         </GlassCard>
       </header>
@@ -139,18 +213,19 @@ const DonorSearch = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
               <label className="block text-sm font-medium mb-2">Actions</label>
               <NeonButton 
                 variant="hero" 
-                onClick={searchDonors}
-                disabled={!selectedBloodGroup}
+                onClick={() => searchDonors(selectedBloodGroup, searchQuery)}
                 className="mb-2"
               >
-                🔍 Search Donors
+                <Search className="w-4 h-4 mr-2" />
+                Search Donors
               </NeonButton>
               <NeonButton 
                 variant="outline" 
                 size="sm"
                 onClick={handleVoiceSearch}
               >
-                🎤 Voice Search
+                <Mic className="w-4 h-4 mr-2" />
+                Voice Search
               </NeonButton>
             </div>
           </div>
@@ -161,7 +236,7 @@ const DonorSearch = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
         </GlassCard>
 
         {/* Results Section */}
-        {loading && (
+        {isLoading && (
           <div className="text-center">
             <GlassCard className="max-w-md mx-auto">
               <div className="animate-pulse">
@@ -172,11 +247,11 @@ const DonorSearch = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
           </div>
         )}
 
-        {!loading && donors.length > 0 && (
+        {!isLoading && donors.length > 0 && (
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold neon-text mb-2">
-                Found {donors.length} donors for {selectedBloodGroup}
+                Found {donors.length} donors {selectedBloodGroup && `for ${selectedBloodGroup}`}
               </h3>
               <p className="text-muted-foreground">Contact donors directly for blood donation requests</p>
             </div>
@@ -193,14 +268,21 @@ const DonorSearch = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
           </div>
         )}
 
-        {!loading && selectedBloodGroup && donors.length === 0 && (
+        {!isLoading && donors.length === 0 && (selectedBloodGroup || searchQuery) && (
           <div className="text-center">
             <GlassCard className="max-w-md mx-auto">
               <div className="text-xl font-bold mb-2">No donors found</div>
               <div className="text-muted-foreground mb-4">
-                No donors available for {selectedBloodGroup} matching your search criteria.
+                No donors available matching your search criteria.
               </div>
-              <NeonButton variant="outline" onClick={() => setSearchQuery('')}>
+              <NeonButton 
+                variant="outline" 
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedBloodGroup('');
+                  searchDonors();
+                }}
+              >
                 Clear Search
               </NeonButton>
             </GlassCard>
