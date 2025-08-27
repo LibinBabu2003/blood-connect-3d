@@ -52,8 +52,10 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
       }
       
       if (query) {
+        // Sanitize the query to prevent SQL injection
+        const sanitizedQuery = query.replace(/[%_\\]/g, '\\$&');
         supabaseQuery = supabaseQuery.or(
-          `name.ilike.%${query}%,location.ilike.%${query}%,gender.ilike.%${query}%`
+          `name.ilike.%${sanitizedQuery}%,location.ilike.%${sanitizedQuery}%,gender.ilike.%${sanitizedQuery}%`
         );
       }
       
@@ -128,7 +130,7 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
         },
         (payload) => {
           console.log('New donor added:', payload);
-          // Refresh the search to include new donor
+          // Refresh the search to include new donor with current filter values
           searchDonors(selectedBloodGroup, searchQuery);
           toast({
             title: "New Donor Available!",
@@ -145,7 +147,7 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
         },
         (payload) => {
           console.log('Donor updated:', payload);
-          // Refresh the search to reflect updates
+          // Refresh the search to reflect updates with current filter values
           searchDonors(selectedBloodGroup, searchQuery);
         }
       )
@@ -154,7 +156,7 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [selectedBloodGroup, searchQuery]);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
