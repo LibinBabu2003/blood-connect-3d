@@ -115,7 +115,7 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
 
   useEffect(() => {
     searchDonors();
-    
+
     // Set up real-time subscription for new donors
     const channel = supabase
       .channel('donors-changes')
@@ -128,8 +128,13 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
         },
         (payload) => {
           console.log('New donor added:', payload);
-          // Refresh the search to include new donor
-          searchDonors(selectedBloodGroup, searchQuery);
+          // Refresh the search with the latest filters to include new donor
+          setTimeout(() => {
+            searchDonors(
+              typeof selectedBloodGroup === 'string' ? selectedBloodGroup : '',
+              typeof searchQuery === 'string' ? searchQuery : ''
+            );
+          });
           toast({
             title: "New Donor Available!",
             description: `${payload.new.name} with ${payload.new.blood_group} blood group just registered.`,
@@ -143,10 +148,14 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
           schema: 'public',
           table: 'donors'
         },
-        (payload) => {
-          console.log('Donor updated:', payload);
-          // Refresh the search to reflect updates
-          searchDonors(selectedBloodGroup, searchQuery);
+        () => {
+          // Refresh the search with current filters
+          setTimeout(() => {
+            searchDonors(
+              typeof selectedBloodGroup === 'string' ? selectedBloodGroup : '',
+              typeof searchQuery === 'string' ? searchQuery : ''
+            );
+          });
         }
       )
       .subscribe();
@@ -154,7 +163,8 @@ const DonorSearch = ({ onNavigateHome }: DonorSearchProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+    // Intentionally depend on filters to avoid stale values inside handlers
+  }, [selectedBloodGroup, searchQuery]);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
